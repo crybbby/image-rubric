@@ -1,0 +1,22 @@
+# Next.js
+.next/
+out/
+build/
+
+# Dependencies
+node_modules/
+
+# Environment
+.env.local
+.env.*.local
+.env
+
+# OS
+.DS_Store
+*.pem
+
+# Logs
+npm-debug.log*
+
+# Vercel
+.vercel
