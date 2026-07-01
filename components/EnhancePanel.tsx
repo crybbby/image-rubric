@@ -81,6 +81,7 @@ export default function EnhancePanel({ images, rubricResult }: Props) {
         body: JSON.stringify({
           prompt: item.prompt,
           sourceImage: { base64: source.base64, mediaType: source.mediaType },
+          quality: item.copy.length > 0 ? "pro" : "standard",
         }),
       });
       const data = await res.json();

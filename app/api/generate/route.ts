@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from "next/server";
 
 const GEMINI_MODEL = process.env.GEMINI_IMAGE_MODEL || "gemini-3.1-flash-image";
+// Text-heavy images (infographics, comparison charts) render far more reliably
+// on the pro image model; photo-only edits don't need it.
+const GEMINI_PRO_MODEL = process.env.GEMINI_PRO_IMAGE_MODEL || "gemini-3-pro-image";
 
 interface GeminiPart {
   text?: string;
@@ -22,17 +25,19 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { prompt, sourceImage } = body as {
+    const { prompt, sourceImage, quality } = body as {
       prompt: string;
       sourceImage: { base64: string; mediaType: string };
+      quality?: "standard" | "pro";
     };
 
     if (!prompt || !sourceImage?.base64) {
       return NextResponse.json({ error: "prompt and sourceImage are required" }, { status: 400 });
     }
 
+    const model = quality === "pro" ? GEMINI_PRO_MODEL : GEMINI_MODEL;
     const res = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`,
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
       {
         method: "POST",
         headers: {
