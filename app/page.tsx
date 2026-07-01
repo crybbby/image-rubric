@@ -2,6 +2,7 @@
 
 import { useState, useCallback, useRef } from "react";
 import RubricResults from "@/components/RubricResults";
+import EnhancePanel from "@/components/EnhancePanel";
 import type { RubricResult } from "@/types/rubric";
 
 interface UploadedImage {
@@ -247,11 +248,22 @@ export default function Home() {
 
         {/* Results */}
         {result && (
-          <RubricResults
-            result={result}
-            images={images.map((img) => img.preview)}
-            onReset={reset}
-          />
+          <>
+            <RubricResults
+              result={result}
+              images={images.map((img) => img.preview)}
+              onReset={reset}
+            />
+            <EnhancePanel
+              images={images.map((img) => ({
+                base64: img.base64,
+                mediaType: img.mediaType,
+                preview: img.preview,
+                name: img.file.name,
+              }))}
+              rubricResult={result}
+            />
+          </>
         )}
       </div>
     </main>
