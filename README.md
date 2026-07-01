@@ -26,7 +26,7 @@ Open [http://localhost:3000](http://localhost:3000).
 | --- | --- | --- |
 | `ANTHROPIC_API_KEY` | Yes | Rubric analysis + enhancement planning (Claude) |
 | `GEMINI_API_KEY` | For image output | Renders the improved images ([Google AI Studio](https://aistudio.google.com/apikey)) |
-| `GEMINI_IMAGE_MODEL` | No | Defaults to `gemini-2.5-flash-image` |
+| `GEMINI_IMAGE_MODEL` | No | Defaults to `gemini-3.1-flash-image` |
 
 ## How to use it
 
