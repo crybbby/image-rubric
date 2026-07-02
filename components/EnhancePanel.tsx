@@ -230,11 +230,19 @@ export default function EnhancePanel({ images, rubricResult }: Props) {
 
       {phase === "ready" && plan && (
         <div className="space-y-4">
-          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4">
-            <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wide mb-1">
-              Strategy
-            </p>
-            <p className="text-sm text-emerald-900">{plan.planSummary}</p>
+          <div className="bg-emerald-50 border border-emerald-200 rounded-xl p-4 space-y-3">
+            <div>
+              <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wide mb-1">
+                Key Selling Point
+              </p>
+              <p className="text-sm font-medium text-emerald-900">{plan.keySellingPoint}</p>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wide mb-1">
+                Strategy
+              </p>
+              <p className="text-sm text-emerald-900">{plan.planSummary}</p>
+            </div>
           </div>
 
           {!plan.generationAvailable && (

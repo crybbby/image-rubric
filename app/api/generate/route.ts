@@ -36,6 +36,9 @@ export async function POST(req: NextRequest) {
     }
 
     const model = quality === "pro" ? GEMINI_PRO_MODEL : GEMINI_MODEL;
+    const finalPrompt = `${prompt}
+
+RENDER QUALITY (mandatory): produce a finished, retail-ready Amazon product listing image — photorealistic professional product photography, polished commercial graphic design, crisp print-quality typography. No wireframe, sketch, draft, mockup, or placeholder aesthetic. No watermarks. Square 1:1 canvas.`;
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
       {
@@ -54,7 +57,7 @@ export async function POST(req: NextRequest) {
                     data: sourceImage.base64,
                   },
                 },
-                { text: prompt },
+                { text: finalPrompt },
               ],
             },
           ],

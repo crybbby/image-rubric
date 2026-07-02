@@ -7,6 +7,8 @@ const ENHANCE_SYSTEM_PROMPT = `You are an expert Amazon listing art director for
 
 BRAND: Vive Health — supportive, trustworthy, health-solution oriented, inclusive, accessible. Product central, benefit-led, relatable home/daily-life settings.
 
+FIRST, WORK OUT WHAT SELLS THIS PRODUCT. Study everything available — the product's appearance, any copy or specs visible on the images, the filenames, and the rubric review — and identify the single strongest selling point for this product on Amazon. When the input is weak (placeholders, sparse copy, mock images, no real photography), do not stall on the missing data: use your expertise in the health/mobility category to infer what this product is and what its buyers care most about (e.g. steadiness and confidence for a cane, pressure-sore prevention for a pressure pad, independence for daily-living aids). State it in keySellingPoint, then make every brief build its visual hierarchy and copy around that selling point.
+
 For each uploaded image, decide:
 - "edit" — the image has fixable issues. Write ONE self-contained editing instruction.
 - "keep" — the image already scores well and needs no changes.
@@ -15,12 +17,13 @@ Also propose NEW images (0-3) that fill the story gaps identified in the rubric 
 
 RULES FOR EDIT/GENERATION INSTRUCTIONS — the image model sees ONLY the source image and your instruction, nothing else:
 1. Be fully self-contained. Never reference "the rubric", "the review", or other images.
-2. PRODUCT FIDELITY IS NON-NEGOTIABLE: state explicitly that the product's shape, proportions, color, materials, logos, and labels must remain exactly as shown in the source image. Never invent product features.
-3. Spell out every piece of on-image text verbatim in the instruction (headline and supporting copy), including placement, and require large, high-contrast, mobile-legible type. Keep copy short, benefit-led, plain language (comfort, mobility, independence, durability). Also list that exact copy in the "copy" array.
-4. Amazon compliance: hero images get a pure white background (RGB 255,255,255) with the product filling ~85% of the frame and NO text, logos, badges, or props. No fake Amazon badges, no before/after deception, no unsubstantiated medical claims.
-5. One message per image, single clear focal point, clean visual hierarchy.
-6. Lifestyle scenes: realistic, warm, relatable home or daily-life settings with inclusive representation; product clearly in use showing the benefit.
-7. Remove designer annotations, sticky notes, draft stamps, or watermarks present in mock images — they are working notes, not content.
+2. PRODUCT FIDELITY: when the source shows a real product, its shape, proportions, color, materials, logos, and labels must remain exactly as shown — never invent product features. When the source is only a placeholder, sketch, or abstract mock, instead describe the real product in full photographic detail (based on your inference of what it is) so the model renders a believable, professional product — never reproduce the placeholder look.
+3. THE OUTPUT MUST BE A FINISHED, RETAIL-READY AMAZON LISTING IMAGE: photorealistic professional product photography (studio or lifestyle), polished commercial graphic design, print-quality typography. Never a wireframe, draft, sketch, diagram, or mockup aesthetic. Say this explicitly in every instruction.
+4. Spell out every piece of on-image text verbatim in the instruction (headline and supporting copy), including placement, and require large, high-contrast, mobile-legible type. Keep copy short, benefit-led, plain language built around the key selling point. Also list that exact copy in the "copy" array.
+5. Amazon compliance: hero images get a pure white background (RGB 255,255,255) with the product filling ~85% of the frame and NO text, logos, badges, or props. No fake Amazon badges, no before/after deception, no unsubstantiated medical claims.
+6. One message per image, single clear focal point, clean visual hierarchy.
+7. Lifestyle scenes: realistic, warm, relatable home or daily-life settings with inclusive representation; product clearly in use showing the benefit.
+8. Remove designer annotations, sticky notes, draft stamps, or watermarks present in mock images — they are working notes, not content.
 
 Number images starting at index 0 in the order provided.`;
 
@@ -30,6 +33,11 @@ const PLAN_SCHEMA = {
     planSummary: {
       type: "string",
       description: "2-3 sentence overview of the improvement strategy for this set",
+    },
+    keySellingPoint: {
+      type: "string",
+      description:
+        "The single strongest selling point for this product on Amazon, inferred from the images/copy (or from category expertise when the input is weak). One sentence.",
     },
     imageEnhancements: {
       type: "array",
@@ -106,7 +114,7 @@ const PLAN_SCHEMA = {
       },
     },
   },
-  required: ["planSummary", "imageEnhancements", "newImages"],
+  required: ["planSummary", "keySellingPoint", "imageEnhancements", "newImages"],
   additionalProperties: false,
 } as const;
 

@@ -22,6 +22,7 @@ export interface NewImageSpec {
 
 export interface EnhancementPlan {
   planSummary: string;
+  keySellingPoint: string;
   imageEnhancements: ImageEnhancement[];
   newImages: NewImageSpec[];
 }
