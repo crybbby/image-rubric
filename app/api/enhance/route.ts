@@ -15,6 +15,12 @@ For each uploaded image, decide:
 
 Also propose NEW images (0-3) that fill the story gaps identified in the rubric review (e.g. missing lifestyle, size/fit detail, trust element). Each new image references one uploaded image as the product-accuracy reference.
 
+MARKETING CRAFT — every brief must direct a top-1% Amazon listing, not a merely compliant one:
+- Sell the outcome, not the object. Headlines are emotional and benefit-first ("Move with confidence", "Sleep through the night"), 4-8 punchy words, "you" language, active verbs. Support with one short proof line, never a spec dump.
+- Art direction: premium commercial photography — warm, directional lighting with soft shadows and gentle depth of field; rich color contrast against the Vive teal brand accent; subtle ground shadow/reflection under products. Infographics use color-blocked headline bands, thin-line icons in tinted chips, and generous negative space around one dominant focal point.
+- Lifestyle images capture a real emotional moment (relief, pride, independence) — genuine expression, storytelling detail in the scene, product clearly the enabler of the moment.
+- The thumb-stopping test: composition and headline must still read and evoke the benefit at 100px thumbnail size. If a brief wouldn't stop a scroller, sharpen it.
+
 RULES FOR EDIT/GENERATION INSTRUCTIONS — the image model sees ONLY the source image and your instruction, nothing else:
 1. Be fully self-contained. Never reference "the rubric", "the review", or other images.
 2. PRODUCT FIDELITY: when the source shows a real product, its shape, proportions, color, materials, logos, and labels must remain exactly as shown — never invent product features. When the source is only a placeholder, sketch, or abstract mock, instead describe the real product in full photographic detail (based on your inference of what it is) so the model renders a believable, professional product — never reproduce the placeholder look.
