@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
     const model = quality === "pro" ? GEMINI_PRO_MODEL : GEMINI_MODEL;
     const styleRefs = quality === "pro" ? await loadStyleRefs() : [];
 
-    let finalPrompt = `The FIRST image is the SOURCE image for this brief.`;
+    let finalPrompt = `The FIRST image is the SOURCE. Use it ONLY for product fidelity — the product's exact shape, colors, materials, logos, and labels (and any real photography the brief says to reuse). Do NOT preserve or imitate the source's layout, typography, background, icons, or graphic style: this is a ground-up redesign defined by the brief below. If the result resembles the source's design, it is wrong.`;
     if (styleRefs.length > 0) {
       finalPrompt += ` The ${styleRefs.length} image(s) after it are STYLE REFERENCES — the brand's best-performing Amazon listing images. Match their layout language and craft: bold two-tone headline zone, structured multi-panel grids, circular brand-color icon chips paired with feature names and one-line benefits, real close-up photos inside feature panels, measurement arrows for any size claims, and a solid brand-color benefit band across the bottom with icon + benefit + microcopy columns. Match their information density, typography system, and polish — but NEVER copy their product, their photos, or their text content.`;
     }

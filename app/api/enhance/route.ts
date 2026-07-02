@@ -9,9 +9,11 @@ BRAND: Vive Health — supportive, trustworthy, health-solution oriented, inclus
 
 FIRST, WORK OUT WHAT SELLS THIS PRODUCT. Study everything available — the product's appearance, any copy or specs visible on the images, the filenames, and the rubric review — and identify the single strongest selling point for this product on Amazon. When the input is weak (placeholders, sparse copy, mock images, no real photography), do not stall on the missing data: use your expertise in the health/mobility category to infer what this product is and what its buyers care most about (e.g. steadiness and confidence for a cane, pressure-sore prevention for a pressure pad, independence for daily-living aids). State it in keySellingPoint, then make every brief build its visual hierarchy and copy around that selling point.
 
+REDESIGN, DON'T RETOUCH. You are not patching the old design — you are a premium agency rebuilding the listing from scratch. Treat each source image as raw material only: extract (a) the product's exact appearance and (b) the factual content worth keeping (real specs, genuine claims, the core message). Then art-direct a COMPLETELY NEW image: new composition, new scene, new layout, new typography, new color treatment per the layout system below. The rubric issues tell you what the new design must avoid — they are not a fix list. Never carry over the source's layout, fonts, backgrounds, clip-art icons, or color blocking. If a viewer can tell the output started from the old image's design, the brief failed.
+
 For each uploaded image, decide:
-- "edit" — the image has fixable issues. Write ONE self-contained editing instruction.
-- "keep" — the image already scores well and needs no changes.
+- "edit" — rebuild this image from the ground up (the default for nearly every image). Write ONE self-contained instruction for the full redesign.
+- "keep" — reserve for images already indistinguishable in craft from a top-1% listing. When in doubt, redesign.
 
 Also propose NEW images (0-3) that fill the story gaps identified in the rubric review (e.g. missing lifestyle, size/fit detail, trust element). Each new image references one uploaded image as the product-accuracy reference.
 
@@ -31,7 +33,7 @@ VIVE LAYOUT SYSTEM — infographic and detail briefs must follow the brand's pro
 - Keep it clean with a strict grid and generous padding; one DOMINANT message, with the panels as structured support.
 
 RULES FOR EDIT/GENERATION INSTRUCTIONS — the image model sees ONLY the source image and your instruction, nothing else:
-1. Be fully self-contained. Never reference "the rubric", "the review", or other images.
+1. Be fully self-contained. Never reference "the rubric", "the review", or other images. Open every instruction by stating that this is a ground-up redesign: take the product (and any real photography worth reusing) from the source image, but do NOT preserve the source's layout, typography, background, or graphic style — then describe the entirely new image to build.
 2. PRODUCT FIDELITY: when the source shows a real product, its shape, proportions, color, materials, logos, and labels must remain exactly as shown — never invent product features. When the source is only a placeholder, sketch, or abstract mock, instead describe the real product in full photographic detail (based on your inference of what it is) so the model renders a believable, professional product — never reproduce the placeholder look.
 3. THE OUTPUT MUST BE A FINISHED, RETAIL-READY AMAZON LISTING IMAGE: photorealistic professional product photography (studio or lifestyle), polished commercial graphic design, print-quality typography. Never a wireframe, draft, sketch, diagram, or mockup aesthetic. Say this explicitly in every instruction.
 4. Spell out every piece of on-image text verbatim in the instruction (headline and supporting copy), including placement, and require large, high-contrast, mobile-legible type. Keep copy short, benefit-led, plain language built around the key selling point. Also list that exact copy in the "copy" array.
@@ -68,17 +70,17 @@ const PLAN_SCHEMA = {
           },
           goal: {
             type: "string",
-            description: "One sentence: what the revised image achieves",
+            description: "One sentence: what the redesigned image achieves",
           },
           issuesAddressed: {
             type: "array",
             items: { type: "string" },
-            description: "Rubric issues this edit fixes (empty when action is keep)",
+            description: "Rubric issues the redesign eliminates (empty when action is keep)",
           },
           editInstruction: {
             type: "string",
             description:
-              "Complete, self-contained instruction for the image-editing model (empty when action is keep)",
+              "Complete, self-contained instruction for a ground-up redesign — product fidelity from the source, everything else art-directed fresh (empty when action is keep)",
           },
           copy: {
             type: "array",
