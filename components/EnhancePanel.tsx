@@ -61,14 +61,22 @@ export default function EnhancePanel({ images, rubricResult }: Props) {
   const [plan, setPlan] = useState<EnhanceResponse | null>(null);
   const [items, setItems] = useState<WorkItem[]>([]);
   const [error, setError] = useState<string | null>(null);
+  const [productLock, setProductLock] = useState<
+    "idle" | "extracting" | "done" | "failed"
+  >("idle");
+  const [productImage, setProductImage] = useState<GeneratedImage | null>(null);
   const runningRef = useRef(false);
+  const productImageRef = useRef<GeneratedImage | null>(null);
 
   const updateItem = (key: string, patch: Partial<WorkItem>) => {
     setItems((prev) => prev.map((it) => (it.key === key ? { ...it, ...patch } : it)));
   };
 
   const generateItem = async (item: WorkItem) => {
-    const source = images[item.sourceIndex];
+    // Compose from the extracted product reference so the model never sees
+    // the old design; fall back to the original image if extraction failed.
+    const lock = productImageRef.current;
+    const source = lock ?? images[item.sourceIndex];
     if (!source) {
       updateItem(item.key, { status: "error", error: "Source image not found" });
       return;
@@ -95,10 +103,33 @@ export default function EnhancePanel({ images, rubricResult }: Props) {
     }
   };
 
-  const runGeneration = async (workItems: WorkItem[]) => {
+  const runGeneration = async (workItems: WorkItem[], productReferenceIndex: number) => {
     if (runningRef.current) return;
     runningRef.current = true;
     try {
+      // Stage 1: lock a clean product reference out of the best source image.
+      setProductLock("extracting");
+      const refSource = images[productReferenceIndex] ?? images[0];
+      try {
+        const res = await fetch("/api/generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            mode: "extract",
+            sourceImage: { base64: refSource.base64, mediaType: refSource.mediaType },
+          }),
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || "Extraction failed");
+        productImageRef.current = data.image;
+        setProductImage(data.image);
+        setProductLock("done");
+      } catch {
+        productImageRef.current = null;
+        setProductLock("failed");
+      }
+
+      // Stage 2: compose every image fresh from the product reference.
       for (const item of workItems) {
         if (item.kind === "keep") continue;
         await generateItem(item);
@@ -173,7 +204,7 @@ export default function EnhancePanel({ images, rubricResult }: Props) {
       setPhase("ready");
 
       if (data.generationAvailable) {
-        runGeneration(workItems);
+        runGeneration(workItems, data.productReferenceIndex ?? 0);
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
@@ -243,6 +274,41 @@ export default function EnhancePanel({ images, rubricResult }: Props) {
               </p>
               <p className="text-sm text-emerald-900">{plan.planSummary}</p>
             </div>
+            {productLock !== "idle" && (
+              <div>
+                <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wide mb-1">
+                  Product Lock
+                </p>
+                {productLock === "extracting" && (
+                  <p className="text-sm text-emerald-900 flex items-center gap-2">
+                    <span className="inline-block w-3.5 h-3.5 border-2 border-emerald-300 border-t-emerald-700 rounded-full animate-spin" />
+                    Extracting a clean product reference — every image is rebuilt from this…
+                  </p>
+                )}
+                {productLock === "done" && productImage && (
+                  <div className="flex items-center gap-3">
+                    <div className="w-16 h-16 rounded-lg overflow-hidden border border-emerald-200 bg-white flex-shrink-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={`data:${productImage.mediaType};base64,${productImage.base64}`}
+                        alt="Product reference"
+                        className="w-full h-full object-contain"
+                      />
+                    </div>
+                    <p className="text-sm text-emerald-900">
+                      Product reference locked — all images are composed fresh around it, never
+                      from the old designs.
+                    </p>
+                  </div>
+                )}
+                {productLock === "failed" && (
+                  <p className="text-sm text-amber-800">
+                    Couldn&apos;t extract a clean product shot — composing from the original
+                    images instead.
+                  </p>
+                )}
+              </div>
+            )}
           </div>
 
           {!plan.generationAvailable && (

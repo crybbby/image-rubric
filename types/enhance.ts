@@ -23,6 +23,7 @@ export interface NewImageSpec {
 export interface EnhancementPlan {
   planSummary: string;
   keySellingPoint: string;
+  productReferenceIndex: number;
   imageEnhancements: ImageEnhancement[];
   newImages: NewImageSpec[];
 }

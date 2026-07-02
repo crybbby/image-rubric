@@ -37,9 +37,9 @@ VIVE LAYOUT SYSTEM — infographic and detail briefs must follow the brand's pro
 - Size or dimension claims get measurement arrows on the product and per-size use-case panels.
 - Keep it clean with a strict grid and generous padding; one DOMINANT message, with the panels as structured support.
 
-RULES FOR EDIT/GENERATION INSTRUCTIONS — the image model sees ONLY the source image and your instruction, nothing else:
-1. Be fully self-contained. Never reference "the rubric", "the review", or other images. Open every instruction by stating that this is a ground-up redesign: take the product (and any real photography worth reusing) from the source image, but do NOT preserve the source's layout, typography, background, or graphic style — then describe the entirely new image to build.
-2. PRODUCT FIDELITY: when the source shows a real product, its shape, proportions, color, materials, logos, and labels must remain exactly as shown — never invent product features. When the source is only a placeholder, sketch, or abstract mock, instead describe the real product in full photographic detail (based on your inference of what it is) so the model renders a believable, professional product — never reproduce the placeholder look.
+RULES FOR EDIT/GENERATION INSTRUCTIONS — the image model receives ONLY a clean studio photograph of the product plus your instruction. It NEVER sees the original listing image, so it cannot copy the old design — and your instruction must therefore describe the complete new image from a blank canvas: the scene, composition, layout zones, every line of copy and its placement, colors, and lighting.
+1. Be fully self-contained. Never reference "the rubric", "the review", "the source image", or the old design — none of them exist for the image model.
+2. PRODUCT FIDELITY: require the product to match the provided product photograph exactly — same shape, proportions, colors, materials, logos, and labels; never invent product features. When the uploads were only placeholders or sketches, describe the real product in full photographic detail (based on your inference of what it is) so the model renders a believable, professional product.
 3. THE OUTPUT MUST BE A FINISHED, RETAIL-READY AMAZON LISTING IMAGE: photorealistic professional product photography (studio or lifestyle), polished commercial graphic design, print-quality typography. Never a wireframe, draft, sketch, diagram, or mockup aesthetic. Say this explicitly in every instruction.
 4. Spell out every piece of on-image text verbatim in the instruction (headline and supporting copy), including placement, and require large, high-contrast, mobile-legible type. Keep copy short, benefit-led, plain language built around the key selling point. Also list that exact copy in the "copy" array.
 5. Amazon compliance: hero images get a pure white background (RGB 255,255,255) with the product filling ~85% of the frame and NO text, logos, badges, or props. No fake Amazon badges, no before/after deception, no unsubstantiated medical claims.
@@ -60,6 +60,11 @@ const PLAN_SCHEMA = {
       type: "string",
       description:
         "The single strongest selling point for this product on Amazon, inferred from the images/copy (or from category expertise when the input is weak). One sentence.",
+    },
+    productReferenceIndex: {
+      type: "integer",
+      description:
+        "Index of the uploaded image that shows the product most clearly and completely (prefer a clean hero or full product view) — used to extract the product reference photo",
     },
     imageEnhancements: {
       type: "array",
@@ -136,7 +141,13 @@ const PLAN_SCHEMA = {
       },
     },
   },
-  required: ["planSummary", "keySellingPoint", "imageEnhancements", "newImages"],
+  required: [
+    "planSummary",
+    "keySellingPoint",
+    "productReferenceIndex",
+    "imageEnhancements",
+    "newImages",
+  ],
   additionalProperties: false,
 } as const;
 
