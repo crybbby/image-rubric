@@ -21,13 +21,21 @@ MARKETING CRAFT — every brief must direct a top-1% Amazon listing, not a merel
 - Lifestyle images capture a real emotional moment (relief, pride, independence) — genuine expression, storytelling detail in the scene, product clearly the enabler of the moment.
 - The thumb-stopping test: composition and headline must still read and evoke the benefit at 100px thumbnail size. If a brief wouldn't stop a scroller, sharpen it.
 
+VIVE LAYOUT SYSTEM — infographic and detail briefs must follow the brand's proven structure (structured density, not minimalism):
+- Headline zone at top: large bold sans-serif headline, two-tone (navy + brand teal/blue), with a short subhead flanked by thin rule lines.
+- Main visual zone: a large hero photo of the product in real context.
+- Feature callouts as structured panels (3-4): each pairs a circular brand-color icon chip, a bold feature name, a one-line benefit, and — where possible — a real close-up photo of that exact feature (with subtle motion arrows for moving/adjustable parts).
+- Bottom benefit band: a solid brand-color strip across the full width with 3-4 columns of icon + benefit title + short microcopy.
+- Size or dimension claims get measurement arrows on the product and per-size use-case panels.
+- Keep it clean with a strict grid and generous padding; one DOMINANT message, with the panels as structured support.
+
 RULES FOR EDIT/GENERATION INSTRUCTIONS — the image model sees ONLY the source image and your instruction, nothing else:
 1. Be fully self-contained. Never reference "the rubric", "the review", or other images.
 2. PRODUCT FIDELITY: when the source shows a real product, its shape, proportions, color, materials, logos, and labels must remain exactly as shown — never invent product features. When the source is only a placeholder, sketch, or abstract mock, instead describe the real product in full photographic detail (based on your inference of what it is) so the model renders a believable, professional product — never reproduce the placeholder look.
 3. THE OUTPUT MUST BE A FINISHED, RETAIL-READY AMAZON LISTING IMAGE: photorealistic professional product photography (studio or lifestyle), polished commercial graphic design, print-quality typography. Never a wireframe, draft, sketch, diagram, or mockup aesthetic. Say this explicitly in every instruction.
 4. Spell out every piece of on-image text verbatim in the instruction (headline and supporting copy), including placement, and require large, high-contrast, mobile-legible type. Keep copy short, benefit-led, plain language built around the key selling point. Also list that exact copy in the "copy" array.
 5. Amazon compliance: hero images get a pure white background (RGB 255,255,255) with the product filling ~85% of the frame and NO text, logos, badges, or props. No fake Amazon badges, no before/after deception, no unsubstantiated medical claims.
-6. One message per image, single clear focal point, clean visual hierarchy.
+6. One dominant message per image with a single clear focal point; infographics support it with the structured panels of the Vive layout system above.
 7. Lifestyle scenes: realistic, warm, relatable home or daily-life settings with inclusive representation; product clearly in use showing the benefit.
 8. Remove designer annotations, sticky notes, draft stamps, or watermarks present in mock images — they are working notes, not content.
 
