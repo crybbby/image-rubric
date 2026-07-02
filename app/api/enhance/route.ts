@@ -198,6 +198,13 @@ export async function POST(req: NextRequest) {
       ],
     });
 
+    if (response.stop_reason === "max_tokens") {
+      return NextResponse.json(
+        { error: "The enhancement plan ran out of room — try fewer images per run" },
+        { status: 500 }
+      );
+    }
+
     const textContent = response.content.find((c) => c.type === "text");
     if (!textContent || textContent.type !== "text") {
       return NextResponse.json({ error: "No response from model" }, { status: 500 });
