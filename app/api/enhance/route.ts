@@ -211,6 +211,19 @@ export async function POST(req: NextRequest) {
     }
 
     const plan = JSON.parse(textContent.text);
+    // Drop hallucinated entries pointing at images that don't exist, and keep
+    // reference indices inside the uploaded range
+    const clampIndex = (i: number) => Math.min(Math.max(i ?? 0, 0), images.length - 1);
+    plan.imageEnhancements = (plan.imageEnhancements ?? []).filter(
+      (e: { imageIndex: number }) => e.imageIndex >= 0 && e.imageIndex < images.length
+    );
+    plan.newImages = (plan.newImages ?? []).map(
+      (n: { referenceImageIndex: number }) => ({
+        ...n,
+        referenceImageIndex: clampIndex(n.referenceImageIndex),
+      })
+    );
+    plan.productReferenceIndex = clampIndex(plan.productReferenceIndex);
     return NextResponse.json({
       ...plan,
       generationAvailable: Boolean(process.env.GEMINI_API_KEY),

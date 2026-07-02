@@ -151,6 +151,10 @@ export async function POST(req: NextRequest) {
     }
 
     const result = JSON.parse(textContent.text);
+    // Drop hallucinated entries pointing at images that don't exist
+    result.imageAnalysis = (result.imageAnalysis ?? []).filter(
+      (a: { imageIndex: number }) => a.imageIndex >= 0 && a.imageIndex < images.length
+    );
     return NextResponse.json(result);
   } catch (err) {
     console.error("Analysis error:", err);
