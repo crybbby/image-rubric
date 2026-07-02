@@ -77,7 +77,7 @@ export async function POST(req: NextRequest) {
 BRIEF:
 ${prompt}
 
-RENDER QUALITY (mandatory): produce a finished, retail-ready Amazon product listing image with the polish of a top-1% brand — photorealistic professional product photography with warm directional lighting, soft shadows, gentle depth of field, and rich color contrast; polished commercial graphic design with bold, crisp print-quality typography and clear hierarchy. The image must feel premium and emotionally engaging, and still read clearly at thumbnail size. No wireframe, sketch, draft, mockup, or placeholder aesthetic. No watermarks. Square 1:1 canvas.`;
+RENDER QUALITY (mandatory): produce a finished, retail-ready Amazon product listing image with the polish of a top-1% brand — photorealistic professional product photography with warm directional lighting, soft shadows, gentle depth of field, and rich color contrast; polished commercial graphic design with bold, crisp print-quality typography and clear hierarchy. Every claim in the copy must be visibly demonstrated by the imagery — show the product performing the feature the text describes, at the exact moment of benefit. The image must feel premium and emotionally engaging, and still read clearly at thumbnail size. No wireframe, sketch, draft, mockup, or placeholder aesthetic. No watermarks. Square 1:1 canvas.`;
     const res = await fetch(
       `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`,
       {
