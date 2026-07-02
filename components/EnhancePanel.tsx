@@ -7,6 +7,7 @@ import type {
   GeneratedImage,
   GenerationStatus,
 } from "@/types/enhance";
+import { readJson } from "@/lib/readJson";
 
 export interface SourceImage {
   base64: string;
@@ -92,7 +93,7 @@ export default function EnhancePanel({ images, rubricResult }: Props) {
           quality: item.copy.length > 0 ? "pro" : "standard",
         }),
       });
-      const data = await res.json();
+      const data = await readJson(res);
       if (!res.ok) throw new Error(data.error || "Generation failed");
       updateItem(item.key, { status: "done", result: data.image });
     } catch (err) {
@@ -119,7 +120,7 @@ export default function EnhancePanel({ images, rubricResult }: Props) {
             sourceImage: { base64: refSource.base64, mediaType: refSource.mediaType },
           }),
         });
-        const data = await res.json();
+        const data = await readJson(res);
         if (!res.ok) throw new Error(data.error || "Extraction failed");
         productImageRef.current = data.image;
         setProductImage(data.image);
@@ -155,7 +156,7 @@ export default function EnhancePanel({ images, rubricResult }: Props) {
           rubricResult,
         }),
       });
-      const data: EnhanceResponse & { error?: string } = await res.json();
+      const data: EnhanceResponse & { error?: string } = await readJson(res);
       if (!res.ok) throw new Error(data.error || "Could not build the enhancement plan");
 
       const workItems: WorkItem[] = [

@@ -4,6 +4,7 @@ import { useState, useCallback, useRef } from "react";
 import RubricResults from "@/components/RubricResults";
 import EnhancePanel from "@/components/EnhancePanel";
 import type { RubricResult } from "@/types/rubric";
+import { readJson } from "@/lib/readJson";
 
 interface UploadedImage {
   file: File;
@@ -93,12 +94,10 @@ export default function Home() {
         body: JSON.stringify({ images: payload }),
       });
 
+      const data = await readJson(res);
       if (!res.ok) {
-        const err = await res.json();
-        throw new Error(err.error || "Analysis failed");
+        throw new Error(data.error || "Analysis failed");
       }
-
-      const data = await res.json();
       setResult(data);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong");
