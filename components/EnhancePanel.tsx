@@ -93,6 +93,7 @@ export default function EnhancePanel({ images, rubricResult }: Props) {
           prompt: item.prompt,
           sourceImage: { base64: source.base64, mediaType: source.mediaType },
           quality: item.copy.length > 0 ? "pro" : "standard",
+          sourceKind: lock ? "product" : "listing",
         }),
       });
       const data = await readJson(res);
@@ -111,25 +112,28 @@ export default function EnhancePanel({ images, rubricResult }: Props) {
     runningRef.current = true;
     try {
       // Stage 1: lock a clean product reference out of the best source image.
+      // Retry once — everything downstream composes from this.
       setProductLock("extracting");
       const refSource = images[productReferenceIndex] ?? images[0];
-      try {
-        const res = await fetch("/api/generate", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            mode: "extract",
-            sourceImage: { base64: refSource.base64, mediaType: refSource.mediaType },
-          }),
-        });
-        const data = await readJson(res);
-        if (!res.ok) throw new Error(data.error || "Extraction failed");
-        productImageRef.current = data.image;
-        setProductImage(data.image);
-        setProductLock("done");
-      } catch {
-        productImageRef.current = null;
-        setProductLock("failed");
+      productImageRef.current = null;
+      for (let attempt = 0; attempt < 2 && !productImageRef.current; attempt++) {
+        try {
+          const res = await fetch("/api/generate", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              mode: "extract",
+              sourceImage: { base64: refSource.base64, mediaType: refSource.mediaType },
+            }),
+          });
+          const data = await readJson(res);
+          if (!res.ok) throw new Error(data.error || "Extraction failed");
+          productImageRef.current = data.image;
+          setProductImage(data.image);
+          setProductLock("done");
+        } catch {
+          if (attempt === 1) setProductLock("failed");
+        }
       }
 
       // Stage 2: compose every image fresh from the product reference.

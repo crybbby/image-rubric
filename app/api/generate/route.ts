@@ -108,11 +108,12 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { prompt, sourceImage, quality, mode } = body as {
+    const { prompt, sourceImage, quality, mode, sourceKind } = body as {
       prompt?: string;
       sourceImage: { base64: string; mediaType: string };
       quality?: "standard" | "pro";
       mode?: "extract" | "compose";
+      sourceKind?: "product" | "listing";
     };
 
     if (!sourceImage?.base64) {
@@ -136,7 +137,10 @@ export async function POST(req: NextRequest) {
     const model = quality === "pro" ? GEMINI_PRO_MODEL : GEMINI_MODEL;
     const styleRefs = quality === "pro" ? await loadStyleRefs() : [];
 
-    let finalPrompt = `You are a world-class Amazon creative agency designing to maximize click-through rate, perceived product value, and conversion. The FIRST image is the PRODUCT REFERENCE — a clean studio photograph of the exact product. Reproduce this product with perfect fidelity (shape, proportions, colors, materials, logos, labels) inside a completely new composition defined by the brief below. You are creating this image from a blank canvas; no prior design exists.`;
+    let finalPrompt =
+      sourceKind === "listing"
+        ? `You are a world-class Amazon creative agency designing to maximize click-through rate, perceived product value, and conversion. The FIRST image is an OLD LISTING IMAGE, supplied ONLY so you can see the product's exact appearance — its shape, proportions, colors, materials, logos, and labels. Reproduce the product with perfect fidelity, but ignore and do NOT reproduce anything else from that image: not its layout, background, text, icons, colors, graphic style, or composition. You are creating a completely new image from a blank canvas, defined solely by the brief below. If your result resembles that old image's design, it is wrong.`
+        : `You are a world-class Amazon creative agency designing to maximize click-through rate, perceived product value, and conversion. The FIRST image is the PRODUCT REFERENCE — a clean studio photograph of the exact product. Reproduce this product with perfect fidelity (shape, proportions, colors, materials, logos, labels) inside a completely new composition defined by the brief below. You are creating this image from a blank canvas; no prior design exists.`;
     if (styleRefs.length > 0) {
       finalPrompt += ` The ${styleRefs.length} image(s) after it are STYLE REFERENCES — the brand's best-performing Amazon listing images. Match their layout language and craft: bold two-tone headline zone, structured multi-panel grids, circular brand-color icon chips paired with feature names and one-line benefits, real close-up photos inside feature panels, measurement arrows for any size claims, and a solid brand-color benefit band across the bottom with icon + benefit + microcopy columns. Match their information density, typography system, and polish — but NEVER copy their product, their photos, or their text content.`;
     }
