@@ -7,8 +7,7 @@ export async function readJson(res: Response) {
   } catch {
     const snippet = text.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 200);
     throw new Error(
-      `Server returned ${res.status} with a non-JSON response${snippet ? `: ${snippet}` : ""}. ` +
-        `Check the terminal running \`npm run dev\` for the underlying error.`
+      `Server returned ${res.status} with a non-JSON response${snippet ? `: ${snippet}` : ""}.`
     );
   }
 }
