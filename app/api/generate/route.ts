@@ -1,3 +1,6 @@
+// Allow up to 5 minutes on Vercel — the AI calls run long
+export const maxDuration = 300;
+
 import { NextRequest, NextResponse } from "next/server";
 import { readFile, readdir } from "fs/promises";
 import path from "path";
