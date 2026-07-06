@@ -21,34 +21,55 @@ export default function Home() {
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Downscale in the browser before upload: hosting platforms cap request
+  // bodies (Vercel: 4.5MB) and the models don't need more than ~1568px anyway.
+  const readAsDataUrl = (file: File) =>
+    new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => resolve(e.target?.result as string);
+      reader.onerror = reject;
+      reader.readAsDataURL(file);
+    });
+
+  const processFile = async (file: File): Promise<UploadedImage> => {
+    try {
+      const bitmap = await createImageBitmap(file);
+      const MAX = 1568;
+      const scale = Math.min(1, MAX / Math.max(bitmap.width, bitmap.height));
+      const w = Math.round(bitmap.width * scale);
+      const h = Math.round(bitmap.height * scale);
+      const canvas = document.createElement("canvas");
+      canvas.width = w;
+      canvas.height = h;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) throw new Error("no canvas");
+      ctx.drawImage(bitmap, 0, 0, w, h);
+      bitmap.close();
+      const dataUrl = canvas.toDataURL("image/jpeg", 0.85);
+      return {
+        file,
+        preview: dataUrl,
+        base64: dataUrl.split(",")[1],
+        mediaType: "image/jpeg",
+      };
+    } catch {
+      // Fall back to the raw file if the browser can't decode/resize it
+      const dataUrl = await readAsDataUrl(file);
+      return { file, preview: dataUrl, base64: dataUrl.split(",")[1], mediaType: file.type };
+    }
+  };
+
   const processFiles = useCallback(async (files: File[]) => {
     const validTypes = ["image/jpeg", "image/png", "image/webp", "image/gif"];
     const valid = files.filter((f) => validTypes.includes(f.type));
     if (valid.length === 0) return;
 
-    const processed = await Promise.all(
-      valid.map(
-        (file) =>
-          new Promise<UploadedImage>((resolve) => {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-              const dataUrl = e.target?.result as string;
-              const base64 = dataUrl.split(",")[1];
-              resolve({
-                file,
-                preview: dataUrl,
-                base64,
-                mediaType: file.type,
-              });
-            };
-            reader.readAsDataURL(file);
-          })
-      )
-    );
+    const processed = await Promise.all(valid.map(processFile));
 
     setImages((prev) => [...prev, ...processed]);
     setResult(null);
     setError(null);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const onDrop = useCallback(
