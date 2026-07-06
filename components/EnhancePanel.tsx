@@ -111,20 +111,26 @@ export default function EnhancePanel({ images, rubricResult }: Props) {
     if (runningRef.current) return;
     runningRef.current = true;
     try {
-      // Stage 1: lock a clean product reference out of the best source image.
-      // Retry once — everything downstream composes from this.
+      // Stage 1: lock a multi-view product reference sheet from the best
+      // source image plus up to three more views. Retry once — everything
+      // downstream composes from this.
       setProductLock("extracting");
-      const refSource = images[productReferenceIndex] ?? images[0];
+      const orderedSources = [
+        images[productReferenceIndex] ?? images[0],
+        ...images.filter((_, i) => i !== productReferenceIndex),
+      ]
+        .filter(Boolean)
+        .slice(0, 4);
       productImageRef.current = null;
       for (let attempt = 0; attempt < 2 && !productImageRef.current; attempt++) {
         try {
+          const fitted = await fitImagesToBudget(
+            orderedSources.map((s) => ({ base64: s.base64, mediaType: s.mediaType }))
+          );
           const res = await fetch("/api/generate", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              mode: "extract",
-              sourceImage: { base64: refSource.base64, mediaType: refSource.mediaType },
-            }),
+            body: JSON.stringify({ mode: "extract", sourceImages: fitted }),
           });
           const data = await readJson(res);
           if (!res.ok) throw new Error(data.error || "Extraction failed");
@@ -305,8 +311,9 @@ export default function EnhancePanel({ images, rubricResult }: Props) {
                       />
                     </div>
                     <p className="text-sm text-emerald-900">
-                      Product reference locked — all images are composed fresh around it, never
-                      from the old designs.
+                      Multi-view product sheet locked — all images are composed fresh around it,
+                      never from the old designs. If the product looks wrong here, it will be
+                      wrong everywhere: fix your clearest product photo and re-run.
                     </p>
                   </div>
                 )}
