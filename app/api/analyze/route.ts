@@ -1,3 +1,6 @@
+// Allow up to 5 minutes on Vercel — the AI calls run long
+export const maxDuration = 300;
+
 import Anthropic from "@anthropic-ai/sdk";
 import { NextRequest, NextResponse } from "next/server";
 
@@ -28,32 +31,71 @@ RUBRIC CRITERIA:
 
 NOTE: These may be MOCK images with designer notes/annotations written on them. Evaluate the underlying image concept and design intent, not the annotation text itself. Ignore watermarks, draft stamps, or sticky-note style annotations — those are working notes for the designer.
 
-Respond in this exact JSON structure:
-{
-  "overallScore": <0-100>,
-  "overallVerdict": "<1-2 sentence summary>",
-  "imageAnalysis": [
-    {
-      "imageIndex": <0-based index>,
-      "imageRole": "<hero|lifestyle|infographic|detail|unknown>",
-      "strengths": ["<specific positive observation>"],
-      "issues": [
-        {
-          "severity": "<critical|major|minor>",
-          "category": "<category name>",
-          "description": "<what is wrong>",
-          "fix": "<specific actionable fix>"
-        }
-      ],
-      "score": <0-100>
-    }
-  ],
-  "setLevelFeedback": {
-    "strengths": ["<set-level positive>"],
-    "gaps": ["<missing image type or story gap>"],
-    "priorityFixes": ["<most impactful change ranked 1st, 2nd, 3rd>"]
-  }
-}`;
+Be specific and concise — every strength, issue, and fix should be one tight sentence.`;
+
+const RUBRIC_SCHEMA = {
+  type: "object",
+  properties: {
+    overallScore: { type: "integer", description: "0-100" },
+    overallVerdict: { type: "string", description: "1-2 sentence summary" },
+    imageAnalysis: {
+      type: "array",
+      description: "One entry per uploaded image, in order",
+      items: {
+        type: "object",
+        properties: {
+          imageIndex: { type: "integer", description: "0-based index" },
+          imageRole: {
+            type: "string",
+            enum: ["hero", "lifestyle", "infographic", "detail", "unknown"],
+          },
+          strengths: {
+            type: "array",
+            items: { type: "string" },
+            description: "Specific positive observations",
+          },
+          issues: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                severity: { type: "string", enum: ["critical", "major", "minor"] },
+                category: { type: "string" },
+                description: { type: "string", description: "What is wrong" },
+                fix: { type: "string", description: "Specific actionable fix" },
+              },
+              required: ["severity", "category", "description", "fix"],
+              additionalProperties: false,
+            },
+          },
+          score: { type: "integer", description: "0-100" },
+        },
+        required: ["imageIndex", "imageRole", "strengths", "issues", "score"],
+        additionalProperties: false,
+      },
+    },
+    setLevelFeedback: {
+      type: "object",
+      properties: {
+        strengths: { type: "array", items: { type: "string" } },
+        gaps: {
+          type: "array",
+          items: { type: "string" },
+          description: "Missing image types or story gaps",
+        },
+        priorityFixes: {
+          type: "array",
+          items: { type: "string" },
+          description: "Most impactful changes, ranked",
+        },
+      },
+      required: ["strengths", "gaps", "priorityFixes"],
+      additionalProperties: false,
+    },
+  },
+  required: ["overallScore", "overallVerdict", "imageAnalysis", "setLevelFeedback"],
+  additionalProperties: false,
+} as const;
 
 export async function POST(req: NextRequest) {
   try {
@@ -76,9 +118,15 @@ export async function POST(req: NextRequest) {
     const imageLabels = images.map((img, i) => `Image ${i + 1}: ${img.name}`).join("\n");
 
     const response = await client.messages.create({
-      model: "claude-opus-4-7",
-      max_tokens: 4096,
+      model: "claude-opus-4-8",
+      max_tokens: 16000,
       system: RUBRIC_SYSTEM_PROMPT,
+      output_config: {
+        format: {
+          type: "json_schema",
+          schema: RUBRIC_SCHEMA as unknown as Record<string, unknown>,
+        },
+      },
       messages: [
         {
           role: "user",
@@ -93,17 +141,23 @@ export async function POST(req: NextRequest) {
       ],
     });
 
+    if (response.stop_reason === "max_tokens") {
+      return NextResponse.json(
+        { error: "The analysis ran out of room — try fewer images per run" },
+        { status: 500 }
+      );
+    }
+
     const textContent = response.content.find((c) => c.type === "text");
     if (!textContent || textContent.type !== "text") {
       return NextResponse.json({ error: "No response from model" }, { status: 500 });
     }
 
-    const jsonMatch = textContent.text.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      return NextResponse.json({ error: "Could not parse model response" }, { status: 500 });
-    }
-
-    const result = JSON.parse(jsonMatch[0]);
+    const result = JSON.parse(textContent.text);
+    // Drop hallucinated entries pointing at images that don't exist
+    result.imageAnalysis = (result.imageAnalysis ?? []).filter(
+      (a: { imageIndex: number }) => a.imageIndex >= 0 && a.imageIndex < images.length
+    );
     return NextResponse.json(result);
   } catch (err) {
     console.error("Analysis error:", err);
