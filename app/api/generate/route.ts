@@ -133,7 +133,7 @@ export async function POST(req: NextRequest) {
     const model = quality === "pro" ? GEMINI_PRO_MODEL : GEMINI_MODEL;
     const styleRefs = quality === "pro" ? await loadStyleRefs() : [];
 
-    let finalPrompt = `The FIRST image is the PRODUCT REFERENCE — a clean studio photograph of the exact product. Reproduce this product with perfect fidelity (shape, proportions, colors, materials, logos, labels) inside a completely new composition defined by the brief below. You are creating this image from a blank canvas; no prior design exists.`;
+    let finalPrompt = `You are a world-class Amazon creative agency designing to maximize click-through rate, perceived product value, and conversion. The FIRST image is the PRODUCT REFERENCE — a clean studio photograph of the exact product. Reproduce this product with perfect fidelity (shape, proportions, colors, materials, logos, labels) inside a completely new composition defined by the brief below. You are creating this image from a blank canvas; no prior design exists.`;
     if (styleRefs.length > 0) {
       finalPrompt += ` The ${styleRefs.length} image(s) after it are STYLE REFERENCES — the brand's best-performing Amazon listing images. Match their layout language and craft: bold two-tone headline zone, structured multi-panel grids, circular brand-color icon chips paired with feature names and one-line benefits, real close-up photos inside feature panels, measurement arrows for any size claims, and a solid brand-color benefit band across the bottom with icon + benefit + microcopy columns. Match their information density, typography system, and polish — but NEVER copy their product, their photos, or their text content.`;
     }

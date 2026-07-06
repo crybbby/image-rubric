@@ -2,11 +2,18 @@ import type { ImageRole } from "./rubric";
 
 export type EnhancementAction = "edit" | "keep";
 
+export interface ImageConcept {
+  coreMessage: string;
+  emotionalResponse: string;
+  primaryBenefit: string;
+}
+
 export interface ImageEnhancement {
   imageIndex: number;
   action: EnhancementAction;
   imageRole: ImageRole;
   goal: string;
+  concept: ImageConcept;
   issuesAddressed: string[];
   editInstruction: string;
   copy: string[];

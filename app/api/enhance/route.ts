@@ -9,7 +9,11 @@ BRAND: Vive Health — supportive, trustworthy, health-solution oriented, inclus
 
 FIRST, WORK OUT WHAT SELLS THIS PRODUCT. Study everything available — the product's appearance, any copy or specs visible on the images, the filenames, and the rubric review — and identify the single strongest selling point for this product on Amazon. When the input is weak (placeholders, sparse copy, mock images, no real photography), do not stall on the missing data: use your expertise in the health/mobility category to infer what this product is and what its buyers care most about (e.g. steadiness and confidence for a cane, pressure-sore prevention for a pressure pad, independence for daily-living aids). State it in keySellingPoint, then make every brief build its visual hierarchy and copy around that selling point.
 
-REDESIGN, DON'T RETOUCH. You are not patching the old design — you are a premium agency rebuilding the listing from scratch. Treat each source image as raw material only: extract (a) the product's exact appearance and (b) the factual content worth keeping (real specs, genuine claims, the core message). Then art-direct a COMPLETELY NEW image: new composition, new scene, new layout, new typography, new color treatment per the layout system below. The rubric issues tell you what the new design must avoid — they are not a fix list. Never carry over the source's layout, fonts, backgrounds, clip-art icons, or color blocking. If a viewer can tell the output started from the old image's design, the brief failed.
+EXTRACT THE CONCEPT, DISCARD THE DESIGN. Each source image is a rough wireframe that only communicates a marketing objective — never a design to improve. For every image, first identify: (1) the core message it is trying to communicate, (2) the product being sold, (3) the emotional response the new image should create, and (4) the single most important customer benefit. Record these in the concept fields. Then design as if a world-class Amazon creative agency was handed ONLY that concept — never the original design — and asked to create the highest-converting version possible.
+
+Do not preserve the existing layout, background, shapes, icons, composition, graphic elements, or any Canva-style design choices. Only the marketing intent and the product itself survive. The rubric issues tell you what the new design must avoid — they are not a fix list.
+
+Think like an award-winning creative director maximizing click-through rate, perceived product value, and conversion — not making the old image prettier. The new image must feel like a premium consumer brand: professional composition, visual hierarchy, spacing, typography, lighting, and color psychology, with every element existing for a reason and guiding the eye to the key selling point. You are free to completely rearrange the layout, replace icons with real visual storytelling, introduce premium backgrounds or environments, create realistic product callouts, use depth, shadows, contrast, and lighting, add subtle textures and gradients where they raise quality, change the position and scale of every element, or invent an entirely new visual concept when it communicates the benefit better.
 
 For each uploaded image, decide:
 - "edit" — rebuild this image from the ground up (the default for nearly every image). Write ONE self-contained instruction for the full redesign.
@@ -29,7 +33,7 @@ TEXT-VISUAL LOCK — every word on the image must be proven by what the image sh
 - Each feature panel gets its OWN demonstration moment — a unique crop, angle, or instant that proves that specific feature (strap panel shows fingers tensioning the strap; cushion panel shows the material compressing under a thumb). Never reuse the same product shot across panels, and never pair a claim with a generic beauty shot.
 - Direct the product presentation per message like a photographer: dynamic 3/4 hero angles for form; on-body and in-use shots for fit and function (wearables are always shown worn, in motion, at the moment of benefit); true macro with shallow depth of field for materials, stitching, and texture; zoom-circle insets anchored to the exact spot they magnify; cutaway or layer views to reveal inner construction when the tech is the story; hands interacting with the product for anything adjustable, fastenable, or squeezable; scale cues beside familiar objects when size matters.
 
-VIVE LAYOUT SYSTEM — infographic and detail briefs must follow the brand's proven structure (structured density, not minimalism):
+VIVE LAYOUT SYSTEM — a proven vocabulary for structured infographics (structured density, not minimalism). Use it when it serves the concept; deviate whenever a stronger visual concept communicates the benefit better:
 - Headline zone at top: large bold sans-serif headline, two-tone (navy + brand teal/blue), with a short subhead flanked by thin rule lines.
 - Main visual zone: a large hero photo of the product in real context.
 - Feature callouts as structured panels (3-4): each pairs a circular brand-color icon chip, a bold feature name, a one-line benefit, and — where possible — a real close-up photo of that exact feature (with subtle motion arrows for moving/adjustable parts).
@@ -82,6 +86,26 @@ const PLAN_SCHEMA = {
             type: "string",
             description: "One sentence: what the redesigned image achieves",
           },
+          concept: {
+            type: "object",
+            description: "The marketing intent extracted from the source — the only thing that survives the redesign",
+            properties: {
+              coreMessage: {
+                type: "string",
+                description: "The core message the source image is trying to communicate",
+              },
+              emotionalResponse: {
+                type: "string",
+                description: "The emotional response the new image should create in the customer",
+              },
+              primaryBenefit: {
+                type: "string",
+                description: "The single most important customer benefit",
+              },
+            },
+            required: ["coreMessage", "emotionalResponse", "primaryBenefit"],
+            additionalProperties: false,
+          },
           issuesAddressed: {
             type: "array",
             items: { type: "string" },
@@ -103,6 +127,7 @@ const PLAN_SCHEMA = {
           "action",
           "imageRole",
           "goal",
+          "concept",
           "issuesAddressed",
           "editInstruction",
           "copy",

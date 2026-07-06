@@ -27,6 +27,7 @@ interface WorkItem {
   role: string;
   kind: "edit" | "keep" | "new";
   goal: string;
+  concept: { coreMessage: string; emotionalResponse: string; primaryBenefit: string } | null;
   prompt: string;
   copy: string[];
   issuesAddressed: string[];
@@ -168,6 +169,7 @@ export default function EnhancePanel({ images, rubricResult }: Props) {
             role: ROLE_LABELS[e.imageRole] ?? e.imageRole,
             kind: kept ? "keep" : "edit",
             goal: e.goal,
+            concept: e.concept ?? null,
             prompt: e.editInstruction,
             copy: e.copy,
             issuesAddressed: e.issuesAddressed,
@@ -189,6 +191,7 @@ export default function EnhancePanel({ images, rubricResult }: Props) {
             role: ROLE_LABELS[n.imageRole] ?? n.imageRole,
             kind: "new",
             goal: n.purpose,
+            concept: null,
             prompt: n.generationPrompt,
             copy: n.copy,
             issuesAddressed: [],
@@ -420,6 +423,24 @@ export default function EnhancePanel({ images, rubricResult }: Props) {
 
                   {/* Brief */}
                   <div className="flex-1 min-w-[220px] space-y-2">
+                    {item.concept && (
+                      <div>
+                        <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
+                          Concept
+                        </p>
+                        <p className="text-xs text-gray-700">
+                          <span className="font-medium">Message:</span> {item.concept.coreMessage}
+                        </p>
+                        <p className="text-xs text-gray-700">
+                          <span className="font-medium">Feels like:</span>{" "}
+                          {item.concept.emotionalResponse}
+                        </p>
+                        <p className="text-xs text-gray-700">
+                          <span className="font-medium">#1 benefit:</span>{" "}
+                          {item.concept.primaryBenefit}
+                        </p>
+                      </div>
+                    )}
                     {item.issuesAddressed.length > 0 && (
                       <div>
                         <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-1">
