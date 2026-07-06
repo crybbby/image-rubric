@@ -108,26 +108,38 @@ export async function POST(req: NextRequest) {
 
   try {
     const body = await req.json();
-    const { prompt, sourceImage, quality, mode, sourceKind } = body as {
+    const { prompt, sourceImage, sourceImages, quality, mode, sourceKind } = body as {
       prompt?: string;
-      sourceImage: { base64: string; mediaType: string };
+      sourceImage?: { base64: string; mediaType: string };
+      sourceImages?: { base64: string; mediaType: string }[];
       quality?: "standard" | "pro";
       mode?: "extract" | "compose";
       sourceKind?: "product" | "listing";
     };
 
-    if (!sourceImage?.base64) {
-      return NextResponse.json({ error: "sourceImage is required" }, { status: 400 });
-    }
-
-    // Extract mode: pull a clean studio shot of just the product out of a
-    // listing image. Composition then starts from this, never the old design.
+    // Extract mode: build a multi-view product reference sheet from the
+    // uploaded listing images. Composition then starts from this sheet and
+    // never sees the old designs.
     if (mode === "extract") {
-      const extractPrompt = `Recreate ONLY the physical product from this image as a single professional studio product photograph. Perfect fidelity: identical shape, proportions, colors, materials, textures, logos, and printed labels — do not redesign, simplify, or invent any detail. Show the complete product at a natural three-quarter angle, centered on a pure white background (RGB 255,255,255) with soft studio lighting and a subtle ground shadow. Include nothing else: no text, no graphics, no icons, no people, no props, no background elements from the source. Photorealistic, high detail, square 1:1 canvas.`;
+      const sources = sourceImages?.length ? sourceImages : sourceImage ? [sourceImage] : [];
+      if (sources.length === 0) {
+        return NextResponse.json({ error: "sourceImages is required" }, { status: 400 });
+      }
+      const extractPrompt = `You are given ${sources.length} image(s) of the same physical product from an Amazon listing. Create ONE product reference sheet as a single square image on a pure white background (RGB 255,255,255) containing three views of this exact product: (1) a complete front view, (2) a complete three-quarter view, and (3) a close-up of its most identifying details (logo, label text, straps, fasteners, stitching, controls).
+
+PERFECT FIDELITY IS THE ONLY GOAL. The product must be identical to the source images in shape, proportions, colors, materials, textures, part and strap counts, logo placement, and printed label text. Invent nothing, simplify nothing, omit nothing, beautify nothing. Where the source images disagree with each other, trust the clearest, largest view.
+
+Ignore everything in the sources that is not the physical product: text overlays, graphics, icons, backgrounds, people, and props are old listing designs, not the product. The sheet itself must contain no text or graphics of any kind — just the three product views under soft, even studio lighting. Photorealistic, high detail, square 1:1 canvas.`;
       return await callGemini(GEMINI_PRO_MODEL, [
-        { inlineData: { mimeType: sourceImage.mediaType, data: sourceImage.base64 } },
+        ...sources.map((s) => ({
+          inlineData: { mimeType: s.mediaType, data: s.base64 },
+        })),
         { text: extractPrompt },
       ]);
+    }
+
+    if (!sourceImage?.base64) {
+      return NextResponse.json({ error: "sourceImage is required" }, { status: 400 });
     }
 
     if (!prompt) {
@@ -140,7 +152,7 @@ export async function POST(req: NextRequest) {
     let finalPrompt =
       sourceKind === "listing"
         ? `You are a world-class Amazon creative agency designing to maximize click-through rate, perceived product value, and conversion. The FIRST image is an OLD LISTING IMAGE, supplied ONLY so you can see the product's exact appearance — its shape, proportions, colors, materials, logos, and labels. Reproduce the product with perfect fidelity, but ignore and do NOT reproduce anything else from that image: not its layout, background, text, icons, colors, graphic style, or composition. You are creating a completely new image from a blank canvas, defined solely by the brief below. If your result resembles that old image's design, it is wrong.`
-        : `You are a world-class Amazon creative agency designing to maximize click-through rate, perceived product value, and conversion. The FIRST image is the PRODUCT REFERENCE — a clean studio photograph of the exact product. Reproduce this product with perfect fidelity (shape, proportions, colors, materials, logos, labels) inside a completely new composition defined by the brief below. You are creating this image from a blank canvas; no prior design exists.`;
+        : `You are a world-class Amazon creative agency designing to maximize click-through rate, perceived product value, and conversion. The FIRST image is the PRODUCT REFERENCE SHEET — clean studio views of the exact physical product being sold, including detail close-ups. This is a real product real customers will receive: reproduce it with EXACT fidelity in every appearance — identical shape, proportions, part and strap counts, colors, materials, textures, logo placement, and label text. Any deviation from the sheet is a defect. Every rendering of the product in your image (full views, zoom insets, worn or in-use shots) must stay consistent with the sheet. Build a completely new composition around it, defined by the brief below — you are creating this image from a blank canvas; no prior design exists.`;
     if (styleRefs.length > 0) {
       finalPrompt += ` The ${styleRefs.length} image(s) after it are STYLE REFERENCES — the brand's best-performing Amazon listing images. Match their layout language and craft: bold two-tone headline zone, structured multi-panel grids, circular brand-color icon chips paired with feature names and one-line benefits, real close-up photos inside feature panels, measurement arrows for any size claims, and a solid brand-color benefit band across the bottom with icon + benefit + microcopy columns. Match their information density, typography system, and polish — but NEVER copy their product, their photos, or their text content.`;
     }
@@ -149,7 +161,7 @@ export async function POST(req: NextRequest) {
 BRIEF:
 ${prompt}
 
-RENDER QUALITY (mandatory): produce a finished, retail-ready Amazon product listing image with the polish of a top-1% brand — photorealistic professional product photography with warm directional lighting, soft shadows, gentle depth of field, and rich color contrast; polished commercial graphic design with bold, crisp print-quality typography and clear hierarchy. Every claim in the copy must be visibly demonstrated by the imagery — show the product performing the feature the text describes, at the exact moment of benefit. The image must feel premium and emotionally engaging, and still read clearly at thumbnail size. No wireframe, sketch, draft, mockup, or placeholder aesthetic. No watermarks. Square 1:1 canvas.`;
+RENDER QUALITY (mandatory): produce a finished, retail-ready Amazon product listing image with the polish of a top-1% brand — photorealistic professional product photography with warm directional lighting, soft shadows, gentle depth of field, and rich color contrast; polished commercial graphic design with bold, crisp print-quality typography and clear hierarchy. Every claim in the copy must be visibly demonstrated by the imagery — show the product performing the feature the text describes, at the exact moment of benefit. The image must feel premium and emotionally engaging, and still read clearly at thumbnail size. Product accuracy overrides style: whenever a stylistic choice would alter the product's appearance, fidelity to the product reference wins. No wireframe, sketch, draft, mockup, or placeholder aesthetic. No watermarks. Square 1:1 canvas.`;
 
     return await callGemini(model, [
       { inlineData: { mimeType: sourceImage.mediaType, data: sourceImage.base64 } },
