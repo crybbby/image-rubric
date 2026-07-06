@@ -5,6 +5,7 @@ import RubricResults from "@/components/RubricResults";
 import EnhancePanel from "@/components/EnhancePanel";
 import type { RubricResult } from "@/types/rubric";
 import { readJson } from "@/lib/readJson";
+import { fitImagesToBudget } from "@/lib/imageBudget";
 
 interface UploadedImage {
   file: File;
@@ -103,11 +104,13 @@ export default function Home() {
     setResult(null);
 
     try {
-      const payload = images.map((img) => ({
-        base64: img.base64,
-        mediaType: img.mediaType,
-        name: img.file.name,
-      }));
+      const payload = await fitImagesToBudget(
+        images.map((img) => ({
+          base64: img.base64,
+          mediaType: img.mediaType,
+          name: img.file.name,
+        }))
+      );
 
       const res = await fetch("/api/analyze", {
         method: "POST",
