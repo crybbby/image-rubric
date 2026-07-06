@@ -8,6 +8,7 @@ import type {
   GenerationStatus,
 } from "@/types/enhance";
 import { readJson } from "@/lib/readJson";
+import { fitImagesToBudget } from "@/lib/imageBudget";
 
 export interface SourceImage {
   base64: string;
@@ -145,17 +146,17 @@ export default function EnhancePanel({ images, rubricResult }: Props) {
     setPhase("planning");
     setError(null);
     try {
+      const payload = await fitImagesToBudget(
+        images.map((img) => ({
+          base64: img.base64,
+          mediaType: img.mediaType,
+          name: img.name,
+        }))
+      );
       const res = await fetch("/api/enhance", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          images: images.map((img) => ({
-            base64: img.base64,
-            mediaType: img.mediaType,
-            name: img.name,
-          })),
-          rubricResult,
-        }),
+        body: JSON.stringify({ images: payload, rubricResult }),
       });
       const data: EnhanceResponse & { error?: string } = await readJson(res);
       if (!res.ok) throw new Error(data.error || "Could not build the enhancement plan");
